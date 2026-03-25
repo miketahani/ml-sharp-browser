@@ -4,7 +4,13 @@ import { unprojectGaussians } from "./postprocess";
 import { createViewer } from "./viewer";
 import "./App.css";
 
-type Status = "idle" | "loading-model" | "running" | "postprocessing" | "done" | "error";
+type Status =
+  | "idle"
+  | "loading-model"
+  | "running"
+  | "postprocessing"
+  | "done"
+  | "error";
 
 function App() {
   const [status, setStatus] = useState<Status>("idle");
@@ -14,6 +20,8 @@ function App() {
   const viewerRef = useRef<HTMLDivElement>(null);
   const viewerDispose = useRef<(() => void) | null>(null);
   const imageUrlRef = useRef<string | null>(null);
+
+  const isProcessing = status === "loading-model" || status === "running";
 
   const handleFile = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,7 +91,9 @@ function App() {
 
         setStatus("done");
         setStats(
-          `${gaussians.count.toLocaleString()} Gaussians | inference ${(inferenceTime / 1000).toFixed(1)}s`
+          `${gaussians.count.toLocaleString()} Gaussians | inference ${(
+            inferenceTime / 1000
+          ).toFixed(1)}s`
         );
         setMessage("");
       } catch (err) {
@@ -96,20 +106,16 @@ function App() {
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", fontFamily: "system-ui" }}>
-      <div style={{ padding: "12px 20px", borderBottom: "1px solid #333", background: "#1a1a1a", display: "flex", alignItems: "center", gap: 16 }}>
-        <h1 style={{ margin: 0, fontSize: 16, color: "#eee" }}>ML-SHARP Browser</h1>
+    <div className="app">
+      <div className="toolbar">
+        <h1>ML-SHARP Browser</h1>
 
         <label
           htmlFor="image-input"
+          className="file-label"
           style={{
-            padding: "6px 14px",
-            background: "#2563eb",
-            color: "white",
-            borderRadius: 6,
-            cursor: status === "loading-model" || status === "running" ? "not-allowed" : "pointer",
-            fontSize: 13,
-            opacity: status === "loading-model" || status === "running" ? 0.5 : 1,
+            cursor: isProcessing ? "not-allowed" : "pointer",
+            opacity: isProcessing ? 0.5 : 1,
           }}
         >
           {status === "idle" ? "Open image" : "New image"}
@@ -119,48 +125,25 @@ function App() {
           type="file"
           accept="image/*"
           onChange={handleFile}
-          style={{ display: "none" }}
-          disabled={status === "loading-model" || status === "running"}
+          className="file-input"
+          disabled={isProcessing}
         />
 
         {message && (
-          <span style={{ fontSize: 13, color: status === "error" ? "#f87171" : "#93c5fd" }}>
+          <span
+            className="message"
+            style={{ color: status === "error" ? "#f87171" : "#93c5fd" }}
+          >
             {message}
           </span>
         )}
 
-        {stats && (
-          <span style={{ fontSize: 13, color: "#9ca3af", marginLeft: "auto" }}>
-            {stats}
-          </span>
-        )}
+        {stats && <span className="stats">{stats}</span>}
       </div>
 
-      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        {/* Input image thumbnail */}
-        {imageUrl && (
-          <div style={{ width: 240, borderRight: "1px solid #333", background: "#111", padding: 12, overflow: "auto" }}>
-            <img
-              src={imageUrl}
-              alt="Input"
-              style={{ width: "100%", borderRadius: 6 }}
-            />
-          </div>
-        )}
-
-        {/* 3D viewer */}
-        <div
-          ref={viewerRef}
-          style={{
-            flex: 1,
-            background: "#111",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#555",
-            fontSize: 14,
-          }}
-        >
+      <div className="main">
+        {imageUrl && <img src={imageUrl} alt="Input" className="input-preview" />}
+        <div ref={viewerRef} className="viewer">
           {status === "idle" && "Select an image to begin"}
         </div>
       </div>
