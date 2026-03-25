@@ -173,7 +173,7 @@ export function unprojectGaussians(
   opacities: Float32Array, // (N,)
   count: number,
   imageWidth: number,
-  imageHeight: number,
+  _imageHeight: number,
   fPx: number
 ): Gaussians3D {
   // Internal resolution used by the model

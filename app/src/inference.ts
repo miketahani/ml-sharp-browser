@@ -73,7 +73,6 @@ export async function runInference(
   if (!session) throw new Error("Model not loaded");
 
   const width = img.naturalWidth;
-  const height = img.naturalHeight;
   // Default focal length estimate: assume ~60° horizontal FOV
   const fPx = focalLengthPx ?? width * 0.85;
   const disparityFactor = fPx / width;
