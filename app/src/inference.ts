@@ -21,6 +21,7 @@ export async function loadModel(
 
   onProgress?.("Initializing WebGPU...");
   ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@latest/dist/";
+  ort.env.wasm.numThreads = 1; // Avoid SharedArrayBuffer requirement (GitHub Pages can't set COOP/COEP headers)
 
   onProgress?.("Loading model...");
   session = await ort.InferenceSession.create(MODEL_PATH, {
