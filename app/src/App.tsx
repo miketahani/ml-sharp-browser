@@ -49,7 +49,7 @@ function App() {
 
       try {
         setStatus("loading-model");
-        setMessage("Loading model...");
+        setMessage("Loading model (approx 2.6GB)...");
         await loadModel((msg) => setMessage(msg));
 
         setStatus("running");
@@ -142,7 +142,9 @@ function App() {
       </div>
 
       <div className="main">
-        {imageUrl && <img src={imageUrl} alt="Input" className="input-preview" />}
+        {imageUrl && (
+          <img src={imageUrl} alt="Input" className="input-preview" />
+        )}
         <div ref={viewerRef} className="viewer">
           {status === "idle" && "Select an image to begin"}
         </div>

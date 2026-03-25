@@ -1,7 +1,13 @@
 import * as ort from "onnxruntime-web/webgpu";
 
 const INPUT_SIZE = 1536;
-const MODEL_PATH = "/sharp.onnx";
+
+const HF_BASE = "https://huggingface.co/mxtx0123/ml-sharp-onnx/resolve/main";
+const useLocal = new URLSearchParams(window.location.search).has("localModel");
+const MODEL_PATH = useLocal ? "/sharp.onnx" : `${HF_BASE}/sharp.onnx`;
+const WEIGHTS_PATH = useLocal
+  ? "/sharp.onnx.data"
+  : `${HF_BASE}/sharp.onnx.data`;
 
 export interface GaussianOutput {
   meanVectors: ort.Tensor;
@@ -20,16 +26,17 @@ export async function loadModel(
   if (session) return;
 
   onProgress?.("Initializing WebGPU...");
-  ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@latest/dist/";
+  ort.env.wasm.wasmPaths =
+    "https://cdn.jsdelivr.net/npm/onnxruntime-web@latest/dist/";
   ort.env.wasm.numThreads = 1; // Avoid SharedArrayBuffer requirement (GitHub Pages can't set COOP/COEP headers)
 
-  onProgress?.("Loading model...");
+  onProgress?.("Loading model (approx 2.6GB)...");
   session = await ort.InferenceSession.create(MODEL_PATH, {
     executionProviders: ["webgpu", "wasm"],
     externalData: [
       {
         path: "sharp.onnx.data",
-        data: MODEL_PATH + ".data",
+        data: WEIGHTS_PATH,
       },
     ],
   });
