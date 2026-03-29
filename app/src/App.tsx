@@ -12,33 +12,85 @@ type Status =
   | "done"
   | "error";
 
+function ErrorModal({
+  message,
+  onClose,
+}: {
+  message: string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="error modal" onClick={(e) => e.stopPropagation()}>
+        <span className="error-title">Error</span>
+        <p className="error-message">{message}</p>
+        <button className="close-button" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function InfoModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
-          &times;
-        </button>
-
-        <h1>ML-Sharp Browser</h1>
-        <p>Requires Chromium-based browser (<a href="https://caniuse.com/?search=webgpu" target="_blank" rel="noreferrer">for now</a>)</p>
+      <div className="info modal" onClick={(e) => e.stopPropagation()}>
+        <span className="info-modal-title">ML-Sharp Browser</span>
+        <p>
+          Requires Chromium-based browser (
+          <a
+            href="https://caniuse.com/?search=webgpu"
+            target="_blank"
+            rel="noreferrer"
+          >
+            for now
+          </a>
+          )
+        </p>
         <p>
           Browser-based inference of{" "}
-          <a href="https://github.com/apple/ml-sharp" target="_blank" rel="noreferrer">Apple's SHARP</a>{" "}
-          single-image 3D Gaussian prediction model, running via ONNX. Heavily vibe-coded proof of concept.
+          <a
+            href="https://github.com/apple/ml-sharp"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Apple's SHARP
+          </a>{" "}
+          single-image 3D Gaussian prediction model, running via ONNX. Heavily
+          vibe-coded proof of concept.
         </p>
         <p>
-          The model was exported to ONNX then uploaded to HuggingFace (<a href="https://huggingface.co/mxtx0123/ml-sharp-onnx" target="_blank" rel="noreferrer">link</a>). It's approximately 2.6gb.
+          The model was exported to ONNX then uploaded to HuggingFace (
+          <a
+            href="https://huggingface.co/mxtx0123/ml-sharp-onnx"
+            target="_blank"
+            rel="noreferrer"
+          >
+            link
+          </a>
+          ). It's approximately 2.6gb.
         </p>
         <p>
-          A React app is included which allows a user to convert their own images. Select a photo and the app runs the full SHARP prediction pipeline in your browser. Image is processed by a ViT encoder, decoded into 3D splats, and rendered as an interactive splat scene. No images are uploaded anywhere and inference happens 100% clientside.
+          A React app is included which allows a user to convert their own
+          images. Select a photo and the app runs the full SHARP prediction
+          pipeline in your browser. Image is processed by a ViT encoder, decoded
+          into 3D splats, and rendered as an interactive splat scene. No images
+          are uploaded anywhere and inference happens 100% clientside.
         </p>
-
+        <p>Works best with outdoors images and images with visible depth.</p>
         <p>
-          <a href="https://github.com/miketahani/ml-sharp-browser" target="_blank" rel="noreferrer">
+          <a
+            href="https://github.com/miketahani/ml-sharp-browser"
+            target="_blank"
+            rel="noreferrer"
+          >
             Source on GitHub
           </a>
         </p>
+        <button className="info-modal-close-button" onClick={onClose}>
+          Incredible
+        </button>
       </div>
     </div>
   );
@@ -50,6 +102,9 @@ function App() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [stats, setStats] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(
+    "There was an error loading the model. Please try again.flsjnfdklawjnefkwneflkwjnefkljwfnlkwjnefkl wdkl nawlkfnlkwejfnlkwjnfrklejwnfrkljaenfrklaejnfkjlaenrfklaejnrfklajenfalkejnfrlkaenrfkalejnfrlkaejnrflakejnrfklaejnrfaklejnrflakejnrfklaejnfrlkaejnf"
+  );
   const viewerRef = useRef<HTMLDivElement>(null);
   const viewerDispose = useRef<(() => void) | null>(null);
   const imageUrlRef = useRef<string | null>(null);
@@ -131,7 +186,8 @@ function App() {
         setMessage("");
       } catch (err) {
         setStatus("error");
-        setMessage(`Error: ${err instanceof Error ? err.message : err}`);
+        setMessage("");
+        setErrorMessage(err instanceof Error ? err.message : String(err));
         console.error(err);
       }
     },
@@ -163,18 +219,28 @@ function App() {
         />
 
         {message && (
-          <span
-            className="message"
-            style={{ color: status === "error" ? "#f87171" : "#93c5fd" }}
-          >
+          <span className="message" style={{ color: "#93c5fd" }}>
             {message}
           </span>
         )}
 
         {stats && <span className="stats">{stats}</span>}
 
-        <button className="info-button" onClick={() => setShowInfo(true)} title="Info">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button
+          className="info-button"
+          onClick={() => setShowInfo(true)}
+          title="Info"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="16" x2="12" y2="12" />
             <line x1="12" y1="8" x2="12.01" y2="8" />
@@ -183,6 +249,15 @@ function App() {
       </div>
 
       {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
+      {errorMessage && (
+        <ErrorModal
+          message={errorMessage}
+          onClose={() => {
+            setErrorMessage(null);
+            setStatus("idle");
+          }}
+        />
+      )}
 
       <div className="main">
         {imageUrl && (
